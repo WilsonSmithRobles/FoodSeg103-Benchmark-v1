@@ -19,23 +19,22 @@ def main():
     print(f"Server listening on {HOST}:{PORT}")
 
     while True:
-        server_client_socket, addr = server_socket.accept()
-        print(f"Connection from {addr}")
+        try:
+            server_client_socket, addr = server_socket.accept()
+            print(f"Connection from {addr}")
 
-        rows, cols, encoding, data_length = FoodSeg_Protocol.receive_image_metadata(server_client_socket)
-        image_received = FoodSeg_Protocol.receive_image_data(server_client_socket, data_length, rows, cols, encoding)
+            rows, cols, encoding, data_length = FoodSeg_Protocol.receive_image_metadata(server_client_socket)
+            image_received = FoodSeg_Protocol.receive_image_data(server_client_socket, data_length, rows, cols, encoding)
 
-        cv2.imshow('Image',image_received)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+            extracted_mask = FoodSeg(image_received)
 
-
-        extracted_mask = FoodSeg(image_received)
-
-        FoodSeg_Protocol.send_image_metadata(server_client_socket, extracted_mask, rows, cols, "Grayscale")
-        server_client_socket.sendall(extracted_mask.tobytes())
+            FoodSeg_Protocol.send_image_metadata(server_client_socket, extracted_mask, rows, cols, "Grayscale")
+            server_client_socket.sendall(extracted_mask.tobytes())
+            
+            server_client_socket.close()
         
-        server_client_socket.close()
+        except Exception as e:
+            print("Error: " + str(e))
 
 
 
