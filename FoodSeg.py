@@ -12,6 +12,6 @@ def FoodSeg(image,
     del model
     torch.cuda.empty_cache()
 
-    image = np.uint8(result * 255)
+    image = np.uint8(result)
 
     return image
